@@ -56,7 +56,7 @@ class TelegramFunctions:
 
         img_win = 'https://i.ibb.co/C0ChS0D/win.jpg'
         img_loss = 'https://i.ibb.co/59GsVVs/loss.jpg'
-        if vitorio:
+        if vitoria:
             if requests.get(img_win).status_code != 404:
                 requests.get(f'{self.url_base}sendPhoto?chat_id={self.chat_id}&photo={img_win}')
             else:

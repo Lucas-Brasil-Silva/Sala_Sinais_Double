@@ -2,7 +2,7 @@ import requests
 from telegram_service import TelegramFunctions
 import keyboard
 
-def main():
+def main(token):
     """
     Função principal que monitora o jogo Blaze Double e envia mensagens via Telegram.
 
@@ -18,41 +18,42 @@ def main():
 
     """
 
-    telegram = TelegramFunctions('6567594833:AAErr5EqdsuK-HswFlmUBdjoUuXhFF6aW64')
+    telegram = TelegramFunctions(token)
 
     mensagem_black = '''🚨 Entrada Confirmada 🚨\n⬛ Entrar no Preto ⬛\n⚠️ Fazer 1 Giro ⚠️\n🎰 Blaze Double: 🎰\n🔗 https://blaze.com/pt/games/double 🔗'''
     mensagem_red = '''🚨 Entrada Confirmada 🚨\n🟥 Entrar no Vermelho 🟥\n⚠️ Fazer 1 Giro ⚠️\n🎰 Blaze Double: 🎰\n🔗 https://blaze.com/pt/games/double 🔗'''
+
     id = ''
     while keyboard.is_pressed('space') == False:
-        double = requests.get('https://blaze.com/api/roulette_games/recent').json()
-        double_id = [resultado['id'] for resultado in double]
-        double_num = [resultado['roll'] for resultado in double]
-        double_cor = [resultado['color'] for resultado in double]
-        
-        if double_num[0] == 14:
-            telegram.send_aposta(mensagem_black)
-            telegram.conferir_aposta(double_id[0], double_cor[0])
-        
-        elif double_num[0] == 8 and all(1 == num for num in double_cor[1:3]):
-            telegram.send_aposta(mensagem_black)
-            telegram.conferir_aposta(double_id[0], double_cor[0])
+        dados = requests.get('https://blaze.com/api/roulette_games/recent').json()
+        double = [[dado['id'],dado['roll'],dado['color']]for dado in dados]
 
-        elif id != double_id[0] and double_cor[0] == 1:
-            id = double_id[0]
+        print(double[0][1])
+        if double[0][1] == 14:
+            telegram.send_aposta(mensagem_black)
+            telegram.conferir_aposta(double[0][0], double[0][2])
+        
+        elif double[0][1] == 8 and all(1 == num[2] for num in double[1:3]):
+            telegram.send_aposta(mensagem_black)
+            telegram.conferir_aposta(double[0][0], double[0][2])
+
+        elif id != double[0][0] and double[0][2] == 1:
+            id = double[0][0]
             contador = 1
             while keyboard.is_pressed('space') == False:
+                print(double[0][1])
                 double = requests.get('https://blaze.com/api/roulette_games/recent').json()
                 double_id = [resultado['id'] for resultado in double]
                 double_cor = [resultado['color'] for resultado in double]
-                if id != double_id[0] and double_cor[0] == 1:
-                    id = double_id[0]
+                if id != double[0][0] and double[0][2] == 1:
+                    id = double[0][0]
                     contador += 1
-                elif id != double_id[0] and double_cor[0] in [0,2]:
+                elif id != double[0][0] and double[0][2] in [0,2]:
                     break
                 elif contador == 3:
                     telegram.send_aposta(mensagem_red)
-                    telegram.conferir_aposta(double_id[0], double_cor[0])
+                    telegram.conferir_aposta(double[0][0], double[0][2])
                     break
         
 if __name__ == '__main__':
-    main()
+    main('SEU_TOKEN_AQUI')
